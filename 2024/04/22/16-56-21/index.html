@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 7.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/heart/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/heart/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/heart/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/heart/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/heart/css/main.css">
+
+
+<link rel="stylesheet" href="/heart/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"xxiaolu13.github.io","root":"/heart/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","width":245,"display":"always","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":true},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":false,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="初始操作 镜像:ubuntu-22.04-beta-desktop-amd64.iso  使用22.04错误最少,官网说的,也尝试过centos7去安装,最后没成功. 开启虚拟化">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用devstack部署openstack">
+<meta property="og:url" content="https://xxiaolu13.github.io/heart/2024/04/22/16-56-21/index.html">
+<meta property="og:site_name" content="xiaolu&#39;s blog">
+<meta property="og:description" content="初始操作 镜像:ubuntu-22.04-beta-desktop-amd64.iso  使用22.04错误最少,官网说的,也尝试过centos7去安装,最后没成功. 开启虚拟化">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://xxiaolu13.github.io/heart/image/image-20230927161241760.png">
+<meta property="og:image" content="https://xxiaolu13.github.io/heart/image/image-20230927164045893.png">
+<meta property="og:image" content="https://xxiaolu13.github.io/heart/image/image-20230927164513815.png">
+<meta property="og:image" content="https://xxiaolu13.github.io/heart/image/image-20230927164354533.png">
+<meta property="article:published_time" content="2024-04-22T08:56:21.355Z">
+<meta property="article:modified_time" content="2024-04-23T06:03:44.248Z">
+<meta property="article:author" content="xiaolu">
+<meta property="article:tag" content="openstack">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://xxiaolu13.github.io/heart/image/image-20230927161241760.png">
+
+<link rel="canonical" href="https://xxiaolu13.github.io/heart/2024/04/22/16-56-21/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>使用devstack部署openstack | xiaolu's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/heart/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">xiaolu's blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+      <p class="site-subtitle" itemprop="description">今天不学习 明天变垃圾</p>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/heart/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/heart/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/heart/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://xxiaolu13.github.io/heart/2024/04/22/16-56-21/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/heart/images/avatar.gif">
+      <meta itemprop="name" content="xiaolu">
+      <meta itemprop="description" content="qq:1772318776">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="xiaolu's blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          使用devstack部署openstack
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2024-04-22 16:56:21" itemprop="dateCreated datePublished" datetime="2024-04-22T16:56:21+08:00">2024-04-22</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2024-04-23 14:03:44" itemprop="dateModified" datetime="2024-04-23T14:03:44+08:00">2024-04-23</time>
+              </span>
+
+          
+            <span class="post-meta-item" title="阅读次数" id="busuanzi_container_page_pv" style="display: none;">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span id="busuanzi_value_page_pv"></span>
+            </span>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h3 id="初始操作"><a href="#初始操作" class="headerlink" title="初始操作"></a>初始操作</h3><blockquote>
+<p>镜像:ubuntu-22.04-beta-desktop-amd64.iso</p>
+</blockquote>
+<p>使用22.04错误最少,官网说的,也尝试过centos7去安装,最后没成功.</p>
+<h5 id=""><a href="#" class="headerlink" title=""></a></h5><p>开启虚拟化</p>
+<blockquote>
+<p>这里虚拟机配置建议给高一点8G内存 cpu core尽量大于4 硬盘也大一点</p>
+</blockquote>
+<p><img src="/heart/image/image-20230927161241760.png" alt="图片"></p>
+<h5 id="设置中文"><a href="#设置中文" class="headerlink" title="设置中文"></a>设置中文</h5><p>网上找一个</p>
+<h5 id="敲命令"><a href="#敲命令" class="headerlink" title="敲命令"></a>敲命令</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">ctrl+alt+T 打开终端</span><br><span class="line"></span><br><span class="line">sudo passwd root # 设置root密码 可以切换到root用户了</span><br><span class="line"></span><br><span class="line">su # 切换到root</span><br><span class="line"></span><br><span class="line">apt-get install vim # 下载vim编辑器 因为ubuntu的vi不太好用 nano也不会用</span><br><span class="line"></span><br><span class="line">apt-get install net-tools # 下载网络相关组件 可能回用得上</span><br><span class="line"></span><br><span class="line">apt-get install NetworkManager # 下载NetworkManager 可以用nmcli相关命令配置静态ip,22.04一般情况应该是自带的</span><br><span class="line"></span><br><span class="line">apt-get install git</span><br><span class="line"></span><br><span class="line">ufw stop</span><br><span class="line">ufw disable # 关闭防火墙</span><br><span class="line"></span><br><span class="line">sudo systemctl stop apparmor</span><br><span class="line">sudo systemctl disable apparmor # 关闭安全配置文件</span><br></pre></td></tr></table></figure>
+
+<p>建议在这里拍一个快照</p>
+<hr>
+<h5 id="配置github代理"><a href="#配置github代理" class="headerlink" title="配置github代理"></a>配置github代理</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/hosts</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">文件末尾追加</span></span><br><span class="line">140.82.112.4 github.com</span><br></pre></td></tr></table></figure>
+
+
+
+<h5 id="创建stack用户"><a href="#创建stack用户" class="headerlink" title="创建stack用户"></a>创建stack用户</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo useradd -s /bin/bash -d /opt/stack -m stack</span><br></pre></td></tr></table></figure>
+
+<h5 id="授权"><a href="#授权" class="headerlink" title="授权"></a>授权</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo chmod +x /opt/stack</span><br></pre></td></tr></table></figure>
+
+<h5 id="配置sudo权限"><a href="#配置sudo权限" class="headerlink" title="配置sudo权限"></a>配置sudo权限</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">echo &quot;stack ALL=(ALL) NOPASSWD: ALL&quot; | sudo tee /etc/sudoers.d/stack</span><br></pre></td></tr></table></figure>
+
+<h5 id="切换到stack用户"><a href="#切换到stack用户" class="headerlink" title="切换到stack用户"></a>切换到stack用户</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo -u stack -i</span><br></pre></td></tr></table></figure>
+
+<h5 id="pip换源"><a href="#pip换源" class="headerlink" title="pip换源"></a>pip换源</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">mkdir ~/.pip </span><br><span class="line">sudo vim ~/.pip/pip.conf</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">将以下内容复制进pip.conf中</span></span><br><span class="line">[global]</span><br><span class="line">index-url = https://pypi.tuna.tsinghua.edu.cn/simple</span><br><span class="line">index-index-url = https://mirrors.aliyun.com/pypi/simple/ </span><br><span class="line">[install]</span><br><span class="line">trusted-host =</span><br><span class="line">    pypi.tuna.tsinghua.edu.cn</span><br><span class="line">    mirrors.aliyun.com</span><br></pre></td></tr></table></figure>
+
+<h5 id="拉取DevStack"><a href="#拉取DevStack" class="headerlink" title="拉取DevStack"></a>拉取DevStack</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git clone https://opendev.org/openstack/devstack /opt/stack/devstack</span><br><span class="line">cd devstack</span><br></pre></td></tr></table></figure>
+
+<h5 id="创建local-conf文件-文件放到devstack目录下"><a href="#创建local-conf文件-文件放到devstack目录下" class="headerlink" title="创建local.conf文件 文件放到devstack目录下"></a>创建local.conf文件 文件放到devstack目录下</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">vim local.conf</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">ADMIN_PASSWORD配置自己的密码</span></span><br><span class="line">[[local|localrc]]</span><br><span class="line">ADMIN_PASSWORD=secret # 修改这里为你想要的密码</span><br><span class="line">DATABASE_PASSWORD=$ADMIN_PASSWORD</span><br><span class="line">RABBIT_PASSWORD=$ADMIN_PASSWORD</span><br><span class="line">SERVICE_PASSWORD=$ADMIN_PASSWORD</span><br><span class="line"><span class="meta prompt_"># </span><span class="language-bash">自己的ip 一定是固定ip</span> </span><br><span class="line">HOST_IP=192.168.100.17</span><br></pre></td></tr></table></figure>
+
+<p>建议在这里拍一个快照</p>
+<h5 id="开始部署devstack"><a href="#开始部署devstack" class="headerlink" title="开始部署devstack"></a>开始部署devstack</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">./stack</span><br></pre></td></tr></table></figure>
+
+<p><img src="/heart/image/image-20230927164045893.png" alt="图片"></p>
+<p>成功图示</p>
+<h5 id="可以在浏览器去访问"><a href="#可以在浏览器去访问" class="headerlink" title="可以在浏览器去访问"></a>可以在浏览器去访问</h5><p>http:&#x2F;&#x2F;你的ip&#x2F;dashboard</p>
+<p><img src="/heart/image/image-20230927164513815.png" alt="图片"></p>
+<h5 id="然后在执行一下"><a href="#然后在执行一下" class="headerlink" title="然后在执行一下"></a>然后在执行一下</h5><figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta prompt_"># </span><span class="language-bash">还在devstack目录下</span></span><br><span class="line">source openrc admin admin </span><br><span class="line"></span><br><span class="line">openstack service list # 输入命令测试一下 下面是成功的图</span><br></pre></td></tr></table></figure>
+
+<p><img src="/heart/image/image-20230927164354533.png" alt="图片"></p>
+<p>至此 使用devstack安装openstack成功!</p>
+
+    </div>
+
+    
+    
+    
+        
+
+<div>
+<ul class="post-copyright">
+  <li class="post-copyright-author">
+    <strong>本文作者： </strong>xiaolu
+  </li>
+  <li class="post-copyright-link">
+    <strong>本文链接：</strong>
+    <a href="https://xxiaolu13.github.io/heart/2024/04/22/16-56-21/" title="使用devstack部署openstack">https://xxiaolu13.github.io/heart/2024/04/22/16-56-21/</a>
+  </li>
+  <li class="post-copyright-license">
+    <strong>版权声明： </strong>本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="noopener" target="_blank"><i class="fab fa-fw fa-creative-commons"></i>BY-NC-SA</a> 许可协议。转载请注明出处！
+  </li>
+</ul>
+</div>
+
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/heart/tags/openstack/" rel="tag"># openstack</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/heart/2024/04/22/16-42-58/" rel="prev" title="openstack">
+      <i class="fa fa-chevron-left"></i> openstack
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/heart/2024/04/23/11-18-18/" rel="next" title="cloudflare托管域名">
+      cloudflare托管域名 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%88%9D%E5%A7%8B%E6%93%8D%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">初始操作</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link"><span class="nav-number">1.0.1.</span> <span class="nav-text"></span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E8%AE%BE%E7%BD%AE%E4%B8%AD%E6%96%87"><span class="nav-number">1.0.2.</span> <span class="nav-text">设置中文</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%95%B2%E5%91%BD%E4%BB%A4"><span class="nav-number">1.0.3.</span> <span class="nav-text">敲命令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEgithub%E4%BB%A3%E7%90%86"><span class="nav-number">1.0.4.</span> <span class="nav-text">配置github代理</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAstack%E7%94%A8%E6%88%B7"><span class="nav-number">1.0.5.</span> <span class="nav-text">创建stack用户</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%8E%88%E6%9D%83"><span class="nav-number">1.0.6.</span> <span class="nav-text">授权</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%85%8D%E7%BD%AEsudo%E6%9D%83%E9%99%90"><span class="nav-number">1.0.7.</span> <span class="nav-text">配置sudo权限</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%87%E6%8D%A2%E5%88%B0stack%E7%94%A8%E6%88%B7"><span class="nav-number">1.0.8.</span> <span class="nav-text">切换到stack用户</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#pip%E6%8D%A2%E6%BA%90"><span class="nav-number">1.0.9.</span> <span class="nav-text">pip换源</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E6%8B%89%E5%8F%96DevStack"><span class="nav-number">1.0.10.</span> <span class="nav-text">拉取DevStack</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAlocal-conf%E6%96%87%E4%BB%B6-%E6%96%87%E4%BB%B6%E6%94%BE%E5%88%B0devstack%E7%9B%AE%E5%BD%95%E4%B8%8B"><span class="nav-number">1.0.11.</span> <span class="nav-text">创建local.conf文件 文件放到devstack目录下</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%BC%80%E5%A7%8B%E9%83%A8%E7%BD%B2devstack"><span class="nav-number">1.0.12.</span> <span class="nav-text">开始部署devstack</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E5%8F%AF%E4%BB%A5%E5%9C%A8%E6%B5%8F%E8%A7%88%E5%99%A8%E5%8E%BB%E8%AE%BF%E9%97%AE"><span class="nav-number">1.0.13.</span> <span class="nav-text">可以在浏览器去访问</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#%E7%84%B6%E5%90%8E%E5%9C%A8%E6%89%A7%E8%A1%8C%E4%B8%80%E4%B8%8B"><span class="nav-number">1.0.14.</span> <span class="nav-text">然后在执行一下</span></a></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">xiaolu</p>
+  <div class="site-description" itemprop="description">qq:1772318776</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/heart/archives/">
+        
+          <span class="site-state-item-count">4</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/heart/tags/">
+          
+        <span class="site-state-item-count">3</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2024</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">xiaolu</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a> 强力驱动
+  </div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/heart/lib/anime.min.js"></script>
+
+<script src="/heart/js/utils.js"></script>
+
+
+<script src="/heart/js/schemes/pisces.js"></script>
+
+
+<script src="/heart/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
